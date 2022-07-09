@@ -1,6 +1,10 @@
-const { projects, clients } = require('../sampleData.js')
+// const { projects, clients } = require('../sampleData.js')
 
-const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList, GraphQLSchema } = require('graphql')
+//Mongoose models
+const Project = require('../models/Project')
+const Client = require('../models/Client')
+
+const { GraphQLObjectType, GraphQLID, GraphQLString, GraphQLList, GraphQLSchema, GraphQN, GraphQLNonNull } = require('graphql')
 
 //Project type
 const ProjectType = new GraphQLObjectType({
@@ -37,32 +41,59 @@ const RootQuery = new GraphQLObjectType({
     projects: {
       type: new GraphQLList(ProjectType),
       resolve (parent, args) {
-        return projects
+        return Project.find()
       }
     },
     project: {
       type: ProjectType,
       args: { id: { type: GraphQLID } }, //in order to get the specific parameter
       resolve (parent, args) {
-        return projects.find(project => project.id === args.id)
+        return Project.findById(args.id)
       },
     },
     clients: {
       type: new GraphQLList(ClientType),
       resolve (parent, args) {
-        return clients
+        return Client.find()
       }
     },
     client: {
       type: ClientType,
       args: { id: { type: GraphQLID } }, //in order to get the specific parameter
       resolve (parent, args) {
-        return clients.find(client => client.id === args.id)
+        return Client.findById(parent.clientId)
       },
     },
   },
 })
 
+//Mutations
+const mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    //Add a client
+    addClient: {
+      type: ClientType,
+      args: {
+        name: { type: GraphQLNonNull(GraphQLString) },
+        email: { type: GraphQLNonNull(GraphQLString) },
+        phone: { type: GraphQLNonNull(GraphQLString) }
+      },
+      resolve (parent, args) {
+        const client = new Client({
+          name: args.name,
+          email: args.email,
+          phone: args.phone
+        })
+
+        return client.save()
+      }
+    }
+  }
+})
+
+
 module.exports = new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation
 })
