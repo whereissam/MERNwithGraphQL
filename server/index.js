@@ -12,6 +12,7 @@ const app = express()
 //Connect to database
 connectDB()
 
+//if don't have it, it will have an error
 app.use(cors())
 
 app.use('/graphql', graphqlHTTP({
@@ -19,4 +20,4 @@ app.use('/graphql', graphqlHTTP({
   graphiql: process.env.NODE_ENV === 'development'
 }))
 
-app.listen(port, console.log(`Servr running on port &{port}`))
+app.listen(port, console.log(`Server running on port ${port}`))
